@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eat the Frog — Personal Execution System</title>
+<style>
+:root{--bg:#f5f5f4;--panel:#fff;--ink:#171717;--muted:#737373;--line:#e5e5e5;--soft:#f0f0ef;--dark:#171717;--good:#166534;--warn:#92400e;--bad:#991b1b;--radius:16px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}
+.shell{max-width:1180px;margin:auto;padding:28px 22px 70px}
+header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:12px}.mark{width:40px;height:40px;border-radius:12px;background:#171717;color:white;display:grid;place-items:center;font-weight:800;font-size:18px}
+h1{font-size:19px;margin:0;letter-spacing:-.5px} .sub{color:var(--muted);font-size:12px}
+.header-actions{display:flex;gap:8px;align-items:center}
+.btn{border:1px solid var(--line);background:white;color:var(--ink);border-radius:10px;padding:9px 13px;font-weight:600}
+.btn.primary{background:var(--dark);color:white;border-color:var(--dark)}.btn.ghost{background:transparent}.btn.small{padding:6px 9px;font-size:12px}
+.tabs{display:flex;gap:5px;padding:5px;background:#eaeae8;border-radius:12px;width:max-content;margin-bottom:20px;max-width:100%;overflow:auto}
+.tab{border:0;background:transparent;color:#666;padding:9px 14px;border-radius:9px;font-weight:650;white-space:nowrap}.tab.active{background:white;color:#171717;box-shadow:0 1px 3px #00000012}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr);gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;min-width:0}
+.panel h2{font-size:15px;margin:0 0 4px;letter-spacing:-.2px}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}
+.muted{color:var(--muted)}.tiny{font-size:11px;color:var(--muted)}.section-title{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:750;margin:18px 0 8px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}.stat{background:white;border:1px solid var(--line);border-radius:13px;padding:13px}.stat strong{display:block;font-size:23px;letter-spacing:-1px}.stat span{font-size:11px;color:var(--muted)}
+.task-list{display:flex;flex-direction:column;gap:9px}.task{border:1px solid var(--line);border-radius:13px;padding:12px 13px;display:flex;gap:11px;align-items:flex-start}.task.done{opacity:.62}.task.done .task-title{text-decoration:line-through}
+.check{width:19px;height:19px;border:1.5px solid #b8b8b8;border-radius:6px;flex:0 0 auto;margin-top:2px;display:grid;place-items:center;background:white;color:white}.check.checked{background:#171717;border-color:#171717}
+.task-main{flex:1;min-width:0}.task-title{font-weight:700;font-size:13px;overflow-wrap:anywhere}.task-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.pill{font-size:10px;padding:3px 7px;border-radius:20px;background:var(--soft);color:#555;font-weight:700}.pill.a{background:#fce8e8;color:var(--bad)}.pill.b{background:#fff3dc;color:var(--warn)}.pill.c{background:#eee;color:#555}.pill.d,.pill.e{background:#e9e9e9;color:#666}
+.task-actions{display:flex;gap:4px}.iconbtn{border:0;background:transparent;color:#777;padding:4px;border-radius:6px}.iconbtn:hover{background:#eee;color:#111}
+.empty{padding:25px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}.field label{font-size:11px;font-weight:750;color:#555}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:white;color:#171717;outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:#888;box-shadow:0 0 0 3px #00000009}.field textarea{resize:vertical;min-height:64px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}
+.modal-backdrop{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:18px;z-index:5}.modal-backdrop.show{display:flex}.modal{background:white;border-radius:18px;width:min(680px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 20px 70px #0003}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.modal-head h2{margin:0;font-size:17px}
+.step-row{display:flex;gap:8px;align-items:center;margin:7px 0}.step-row input{flex:1;min-width:0;border:1px solid var(--line);padding:8px;border-radius:8px}.step-row button{border:0;background:transparent;color:#777}
+.principle{padding:12px 0;border-bottom:1px solid var(--line)}.principle:last-child{border:0}.principle strong{display:block;font-size:13px}.principle p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.callout{background:#f4f4f2;border-radius:12px;padding:13px;margin:12px 0}.callout strong{font-size:12px}.callout p{margin:4px 0 0;color:#555;font-size:12px}
+.review-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.rating{border:1px solid var(--line);padding:12px;border-radius:12px}.rating label{font-weight:700;font-size:12px;display:block}.rating small{color:var(--muted)}.rating input{width:100%;margin-top:9px}
+.day-group{margin-bottom:17px}.day-title{font-weight:750;font-size:12px;margin-bottom:8px;display:flex;justify-content:space-between}
+.progress{height:6px;border-radius:10px;background:#eee;overflow:hidden;margin-top:9px}.progress span{height:100%;display:block;background:#222}
+footer{color:var(--muted);font-size:11px;text-align:center;margin-top:24px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.shell{padding:18px 13px 50px}.header-actions .hide-mobile{display:none}}
+@media(max-width:480px){.stats{gap:6px}.stat{padding:10px}.stat strong{font-size:19px}.form-grid,.review-grid{grid-template-columns:1fr}.full{grid-column:auto}.panel{padding:14px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header>
+ <div class="brand"><div class="mark">F</div><div><h1>Eat the Frog</h1><div class="sub">Your personal execution system · saved on this device</div></div></div>
+ <div class="header-actions"><button class="btn ghost hide-mobile" id="importBtn">Import tasks</button><input type="file" id="importFile" accept=".json,application/json" hidden><button class="btn ghost hide-mobile" id="exportBtn">Export backup</button><button class="btn primary" id="addBtn">＋ Add task</button></div>
+</header>
+<nav class="tabs" aria-label="Main navigation">
+ <button class="tab active" data-tab="execute">Execute</button><button class="tab" data-tab="tasks">All tasks</button><button class="tab" data-tab="completed">📊 Tracker & completed</button><button class="tab" data-tab="principles">Principles & review</button><button class="tab" data-tab="vision">🌅 Vision & rules</button><button class="tab" data-tab="handoff">🤖 Claude handoff</button>
+</nav>
+<main id="view"></main>
+<footer>Data is stored locally in this browser using localStorage. Export a backup regularly; clearing browser data can erase it.</footer>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+ <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal-head"><h2 id="modalTitle">Create task</h2><button class="iconbtn" id="closeModal" aria-label="Close">✕</button></div>
+  <form id="taskForm">
+   <input type="hidden" id="taskId">
+   <div class="field"><label for="title">TASK *</label><input id="title" required maxlength="140" placeholder="e.g. Write the first draft of the project case study"></div>
+   <div class="form-grid">
+    <div class="field"><label for="priority">ABCDE PRIORITY</label><select id="priority"><option value="A">A — Must do; serious consequences</option><option value="B">B — Should do; mild consequences</option><option value="C">C — Nice to do; little consequence</option><option value="D">D — Delegate</option><option value="E">E — Eliminate</option></select></div>
+    <div class="field"><label for="effort">EFFORT</label><select id="effort"><option value="15">15 min</option><option value="30">30 min</option><option value="60" selected>1 hour</option><option value="90">1.5 hours</option><option value="120">2 hours</option><option value="240">4 hours</option><option value="480">8+ hours</option></select></div>
+    <div class="field"><label for="impact">IMPACT</label><select id="impact"><option value="5">5 — Very high</option><option value="4" selected>4 — High</option><option value="3">3 — Medium</option><option value="2">2 — Low</option><option value="1">1 — Very low</option></select></div>
+    <div class="field"><label for="due">DUE DATE (OPTIONAL)</label><input id="due" type="date"></div>
+   </div>
+   <div class="field"><label for="outcome">CLEAR OUTCOME — WHAT DOES “DONE” MEAN?</label><textarea id="outcome" placeholder="Describe the observable result, not just the activity."></textarea></div>
+   <div class="field"><label>CONSEQUENCES OF DELAY — 10 MIN / 10 DAYS / 10 MONTHS / 10 YEARS</label><div class="form-grid">
+    <input id="c10m" placeholder="In 10 minutes…"><input id="c10d" placeholder="In 10 days…"><input id="c10mo" placeholder="In 10 months…"><input id="c10y" placeholder="In 10 years…">
+   </div></div>
+   <div class="field"><label for="weaklink">WEAK LINK / BOTTLENECK — WHAT IS HOLDING YOU BACK?</label><textarea id="weaklink" placeholder="Missing skill, unclear next step, dependency, distraction…"></textarea></div>
+   <div class="field"><label for="firstStep">PREPARATION — MAKE STARTING EASY</label><input id="firstStep" placeholder="The first physical action you will take"></div>
+   <div class="field"><label for="notes">NOTES / CONTEXT</label><textarea id="notes" placeholder="Useful links, context, constraints…"></textarea></div>
+   <div class="field"><label>BREAK IT INTO STEPS (SALAMI SLICES)</label><div id="stepsEditor"></div><button type="button" class="btn small" id="addStep">＋ Add step</button></div>
+   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button type="button" class="btn" id="cancelModal">Cancel</button><button class="btn primary" type="submit">Save task</button></div>
+  </form>
+ </section>
+</div>
+<script type="text/plain" id="handoffText">
+# HANDOFF FOR CLAUDE — Eat the Frog execution coach
+
+## Your role
+You are my personal execution strategist, productivity coach and task architect — not a motivational speaker.
+Help me decide what to actually work on, find what matters most, and convert vague ambitions, problems and ideas into concrete tasks I can execute.
+Friendly mentor tone, Hinglish welcome. Direct, practical, honest. Challenge me when I'm avoiding meaningful work.
+Don't let me endlessly plan instead of execute. Don't overload me. Don't manufacture dramatic consequences.
+If I'm confused about direction, help me explore — don't invent a life goal for me.
+"Don't just increase your effort. Identify where your effort is getting blocked."
+
+{{PERSONAL_CONTEXT}}
+
+## What I'll paste below this handoff
+My current website data as JSON: tasks (with steps, completedAt = done), KRA ratings, Law of Three, energy check, improvement plan.
+
+## How to work with me each session
+1. Read my data. Notice what's completed, stalled (old, no steps ticked), or missing.
+2. If I bring a new ambition/problem: understand it first, ask at most ONE focused question if something important is unclear.
+3. Evaluate with impact, consequences, effort, opportunity cost, urgency. 80/20. Find the weakest link.
+4. Respond with: A) what I'm trying to achieve, B) assessment (what matters, what I'm avoiding, opportunity, weak link), C) tasks, D) exact execution order + what to do immediately, E) what NOT to do, F) one question.
+5. Never give "Learn AI"-style tasks. Every step must be independently executable.
+
+## OUTPUT CONTRACT — always end with ONE JSON code block I can paste into the website's "Paste JSON" box
+{
+  "coachNote": "1-3 lines: the frog for today and why",
+  "tasks": [
+    {
+      "id": "keep the existing id when updating a task; new tasks use a short slug like cf_xxx",
+      "title": "Specific, action-oriented (max 140 chars)",
+      "priority": "A|B|C|D|E",
+      "effort": 15|30|60|90|120|240|480,
+      "impact": 1-5,
+      "due": "YYYY-MM-DD or empty (only for a genuine deadline)",
+      "outcome": "What DONE observably means",
+      "consequences": {"m": "10 min", "d": "10 days", "mo": "10 months", "y": "10 years"},
+      "weaklink": "What is blocking progress",
+      "firstStep": "First physical action",
+      "notes": "Context",
+      "steps": ["Small sequential step", "..."],
+      "completedAt": null
+    }
+  ],
+  "remove": ["id or exact title of tasks to delete — only if I agreed"]
+}
+Rules: only include tasks you are adding or changing (unchanged tasks can be left out). Matching is by id, then by title. My ticks on tasks and steps are preserved. To mark a task done set "completedAt" to an ISO date. Optional top-level keys: "vision" {"future":[{"text","task":"task id that builds it"}],"beliefs":[],"insights":[],"rules":[]} — my future-me list, beliefs, self-insights and operating rules (every future-me line should link to a real task; flag lines with no task), "threeActivities" (array of 3), "improvePlan", "energy" {"window","drain"}, "ratings" {"0".."7": 1-10} for the 8 KRAs in this order: Technical depth / system understanding, Problem solving & debugging, Code quality & delivery, System design & architecture, Communication & elaboration, Focus & attention management, Consistency & self-directed execution, Life outside work (home, people, fun, rest).
+</script>
+<script>
+(() => {
+const KEY='eatTheFrog.execution.v1';
+const principles=[
+ ['Clarity','Know exactly what you want to accomplish. Define a visible finish line.'],
+ ['Prioritization','Find the task with the greatest impact. Use ABCDE and the Law of Three.'],
+ ['Consequences','Consider the cost of delay across 10 minutes, 10 days, 10 months and 10 years.'],
+ ['Preparation','Make starting easy: define the first physical action, open the right tools and remove friction.'],
+ ['Key result areas','Identify 5–7 capabilities that drive results. Rate yourself honestly from 1–10.'],
+ ['Weakest link','Find the skill or constraint limiting progress. Improve that bottleneck, then reassess.'],
+ ['Self-directed execution','Set your own standards and deadlines. Don’t wait for someone else to push you.'],
+ ['Energy & attention','Track when your energy is highest. Protect focus from notifications and phone loops.'],
+ ['Salami slices','Break large goals into small, ordered steps and milestones.'],
+ ['Swiss cheese','Make progress in short focused sessions when you cannot finish the whole task.'],
+ ['Time blocks','Put important work on the calendar and protect those hours.'],
+ ['Urgency','Reduce the gap between deciding and starting. Act promptly without rushing quality.'],
+ ['Single handling','Work on one task at a time. Finish a meaningful unit before switching.'],
+ ['Be your own supporter','Review mistakes constructively. Redirect attention to the next useful action.']
+];
+const seed=[
+ {title:'Check Claude',priority:'A',effort:30,impact:4,outcome:'Evaluate Claude for the intended use case and record the decision.',steps:[],firstStep:'Open Claude and test the current workflow.'},
+ {title:'Create plan for tomorrow — Chapter 1: Set the Table',priority:'A',effort:15,impact:5,outcome:'Write tomorrow’s goal, deadline, steps and first frog.',steps:[],firstStep:'Write one outcome that matters most.'},
+ {title:'Find the vital 20% — 80/20 rule',priority:'A',effort:30,impact:5,outcome:'Identify the few activities producing most of the value; defer low-value work.',steps:[],firstStep:'List this week’s recurring activities and rank by impact.'},
+ {title:'Review consequences of the issue',priority:'B',effort:20,impact:4,outcome:'Write the likely consequences of delaying the issue at four time horizons.',steps:[],firstStep:'Open the consequence fields and write honestly.'},
+ {title:'Read the 7-hour notes again',priority:'B',effort:30,impact:3,outcome:'Extract the useful lessons and convert them into actions.',steps:[],firstStep:'Open the notes and highlight the top three ideas.'},
+ {title:'Create the Eat the Frog website',priority:'A',effort:120,impact:5,outcome:'Use this personal task system consistently and refine it based on actual use.',steps:[],firstStep:'Add today’s real tasks and choose the A1 frog.'}
+].map(x=>({...x,id:uid(),createdAt:new Date().toISOString(),completedAt:null,due:'',notes:'',weaklink:''}));
+function uid(){return 't_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8)}
+function dateKey(d=new Date()){return d.toLocaleDateString('en-CA')}
+function safeParse(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+let data=safeParse()||{tasks:seed,ratings:{},threeActivities:['','',''],energy:{},createdAt:new Date().toISOString()};
+if(!Array.isArray(data.tasks))data.tasks=seed;
+let activeTab='execute',filter='all';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function dayLabel(key){const d=new Date(key+'T12:00:00');return d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'short',day:'numeric'})}
+function openModal(task=null){
+ $('taskForm').reset();$('stepsEditor').innerHTML='';$('taskId').value=task?.id||'';
+ $('modalTitle').textContent=task?'Edit task':'Create task';
+ const fields={title:'title',priority:'priority',effort:'effort',impact:'impact',due:'due',outcome:'outcome',weaklink:'weaklink',firstStep:'firstStep',notes:'notes'};
+ Object.entries(fields).forEach(([k,id])=>$(id).value=task?.[k]??({priority:'A',effort:'60',impact:'4'}[k]||''));
+ $('c10m').value=task?.consequences?.m||'';$('c10d').value=task?.consequences?.d||'';$('c10mo').value=task?.consequences?.mo||'';$('c10y').value=task?.consequences?.y||'';
+ (task?.steps||[]).forEach(s=>addStepInput(s));$('modalBackdrop').classList.add('show');$('title').focus();
+}
+function closeModal(){$('modalBackdrop').classList.remove('show')}
+function addStepInput(value=''){const row=document.createElement('div');row.className='step-row';row.innerHTML='<input maxlength="180" placeholder="A small, actionable step" value="'+esc(value)+'"><button type="button" aria-label="Remove step">✕</button>';row.querySelector('button').onclick=()=>row.remove();$('stepsEditor').appendChild(row)}
+function saveTask(e){e.preventDefault();const id=$('taskId').value;const old=data.tasks.find(t=>t.id===id);const task={id:id||uid(),title:$('title').value.trim(),priority:$('priority').value,effort:Number($('effort').value),impact:Number($('impact').value),due:$('due').value,outcome:$('outcome').value.trim(),consequences:{m:$('c10m').value.trim(),d:$('c10d').value.trim(),mo:$('c10mo').value.trim(),y:$('c10y').value.trim()},weaklink:$('weaklink').value.trim(),firstStep:$('firstStep').value.trim(),notes:$('notes').value.trim(),steps:[...$('stepsEditor').querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean).map((title,i)=>({id:uid(),title,done:old?.steps?.find(s=>s.title===title)?.done||false,doneAt:old?.steps?.find(s=>s.title===title)?.doneAt||null})),createdAt:old?.createdAt||new Date().toISOString(),completedAt:old?.completedAt||null};
+ if(old)Object.assign(old,task);else data.tasks.unshift(task);save();closeModal();render()}
+function taskCard(t,showActions=true){const done=!!t.completedAt;const next=t.steps?.find(s=>!s.done);return `<article class="task ${done?'done':''}"><button class="check ${done?'checked':''}" data-action="complete" data-id="${t.id}" title="${done?'Mark incomplete':'Complete task'}">${done?'✓':''}</button><div class="task-main"><div class="task-title">${esc(t.title)}</div><div class="task-meta"><span class="pill ${t.priority.toLowerCase()}">${t.priority==='A'?'A · Must do':t.priority==='B'?'B · Should do':t.priority==='C'?'C · Nice to do':t.priority==='D'?'D · Delegate':'E · Eliminate'}</span><span class="pill">${t.effort>=60?(t.effort/60)+'h':t.effort+'m'} effort</span><span class="pill">Impact ${t.impact}/5</span>${t.due?`<span class="pill">Due ${esc(t.due)}</span>`:''}${t.steps?.length?`<span class="pill">${t.steps.filter(s=>s.done).length}/${t.steps.length} steps</span>`:''}</div>${!done&&next?`<div class="tiny" style="margin-top:7px">Next step: ${esc(next.title)}</div>`:''}${t.outcome?`<div class="tiny" style="margin-top:5px">${esc(t.outcome)}</div>`:''}</div>${showActions?`<div class="task-actions"><button class="iconbtn" data-action="edit" data-id="${t.id}" title="Edit">✎</button><button class="iconbtn" data-action="steps" data-id="${t.id}" title="Work on steps">☷</button><button class="iconbtn" data-action="delete" data-id="${t.id}" title="Delete">×</button></div>`:''}</article>`}
+function sortTasks(ts){const p={A:0,B:1,C:2,D:3,E:4};return [...ts].sort((a,b)=>p[a.priority]-p[b.priority]||b.impact-a.impact||(a.due||'9999').localeCompare(b.due||'9999'))}
+function renderExecute(){const open=sortTasks(data.tasks.filter(t=>!t.completedAt&&t.priority!=='E'));const frog=open[0];const today=data.tasks.filter(t=>t.completedAt&&t.completedAt.slice(0,10)===dateKey());const total=data.tasks.length;const completed=data.tasks.filter(t=>t.completedAt).length;
+ return `<div class="stats"><div class="stat"><strong>${open.length}</strong><span>Open tasks</span></div><div class="stat"><strong>${today.length}</strong><span>Tasks completed today</span><div class="tiny" style="margin-top:4px">${(()=>{const c=dayCounts(dateKey());return ['A','B','C'].map(p=>p+' '+c[p].t+'t/'+c[p].s+'s').join(' · ')})()}</div></div><div class="stat"><strong>${total?Math.round(completed/total*100):0}%</strong><span>All-time completion</span></div></div>
+ <div class="grid"><section class="panel"><div class="panel-head"><div><h2>Today’s execution</h2><div class="sub">Choose the right task. Then single-handle it.</div></div><button class="btn small" data-action="add">＋ Task</button></div>
+ ${frog?`<div class="callout"><strong>🐸 YOUR NEXT FROG · ${frog.priority} PRIORITY</strong><p>${esc(frog.title)}</p>${frog.firstStep?`<p><b>Start here:</b> ${esc(frog.firstStep)}</p>`:''}<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:9px"><button class="btn small" data-action="timer25">▶ Start 25 min now</button><button class="btn small" data-action="timer90">▶ 90-min Frog Block</button><button class="btn small ghost" data-action="break5">☕ 5-min break</button><button class="btn small ghost" data-action="break10">☕ 10-min break</button><button class="btn small ghost" data-action="timerPause" id="pauseBtn">${(!timer&&pausedLeft>0)?"▶ Resume":"❚❚ Pause"}</button><button class="btn small ghost" data-action="timerStop">■ Stop</button><span class="tiny" id="timerOut">${timer?"":"Urgency: start before you feel ready."}</span></div><div class="progress"><span style="width:${frog.steps?.length?frog.steps.filter(s=>s.done).length/frog.steps.length*100:0}%"></span></div></div>`:`<div class="empty">No active tasks. Add a task and choose your next frog.</div>`}
+ <div class="section-title">Priority queue</div><div class="task-list">${open.length?open.map(t=>taskCard(t)).join(''):'<div class="empty">You’re clear. Review completed work or add a new task.</div>'}</div></section>
+ <aside class="panel"><h2>Execute with intention</h2><div class="sub">A quick pre-flight check before starting.</div>
+ <div class="principle"><strong>1. Clarity</strong><p>What exactly will be finished?</p></div><div class="principle"><strong>2. Prioritization</strong><p>Is this the highest-impact task?</p></div><div class="principle"><strong>3. Consequences</strong><p>What happens if I delay it?</p></div><div class="principle"><strong>4. Preparation</strong><p>What is the first physical action?</p></div><div class="principle"><strong>5. Focus</strong><p>Can I work on this without switching?</p></div>
+ ${todayReminder()}<div class="callout"><strong>Remember</strong><p>Your productivity isn't determined by how many tasks you finish. It's determined by whether you finish the right tasks.</p></div>
+ <button class="btn" style="width:100%" data-tab="principles">Open principles & weak-link review →</button></aside></div>`}
+function renderTasks(){let ts=sortTasks(data.tasks.filter(t=>!t.completedAt));if(filter==='50D')ts=ts.filter(t=>t.title.startsWith('50D'));else if(filter!=='all')ts=ts.filter(t=>t.priority===filter);return `<section class="panel"><div class="panel-head"><div><h2>All open tasks</h2><div class="sub">Sort by ABCDE priority and work from the top.</div></div><button class="btn primary small" data-action="add">＋ Add task</button></div><div class="tabs" style="margin-bottom:14px"><button class="tab ${filter==='all'?'active':''}" data-filter="all">All</button>${['A','B','C','D','E'].map(p=>`<button class="tab ${filter===p?'active':''}" data-filter="${p}">${p}</button>`).join('')}<button class="tab ${filter==='50D'?'active':''}" data-filter="50D">🔥 50D challenge</button></div><div class="task-list">${ts.length?ts.map(t=>taskCard(t)).join(''):'<div class="empty">No tasks in this view.</div>'}</div></section>`}
+function dayCounts(key){const c={A:{t:0,s:0},B:{t:0,s:0},C:{t:0,s:0},D:{t:0,s:0},E:{t:0,s:0}};data.tasks.forEach(t=>{const p=c[t.priority]?t.priority:'B';if(t.completedAt&&dateKey(new Date(t.completedAt))===key)c[p].t++;(t.steps||[]).forEach(st=>{if(st.done&&st.doneAt&&dateKey(new Date(st.doneAt))===key)c[p].s++})});return c}
+function countPills(c){return ['A','B','C'].map(p=>`<span class="pill ${p.toLowerCase()}">${p}: ${c[p].t} task${c[p].t===1?'':'s'} · ${c[p].s} step${c[p].s===1?'':'s'}</span>`).join('')}
+function renderTracker(days=14){const rows=[];for(let i=0;i<days;i++){const d=new Date();d.setDate(d.getDate()-i);const k=dateKey(d);const c=dayCounts(k);const score=c.A.t*3+c.A.s+c.B.t*2+c.B.s*0.5+c.C.t+c.C.s*0.25;rows.push({k,c,score,i})}const max=Math.max(1,...rows.map(r=>r.score));
+ return `<section class="panel" style="margin-bottom:18px"><div class="panel-head"><div><h2>📊 Daily tracker</h2><div class="sub">What you finished each day, by priority. Ticked steps count too. A-work is what moves your life — watch that column.</div></div></div>${rows.map(r=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);flex-wrap:wrap"><div style="width:110px;font-weight:700;font-size:12px">${r.i===0?'Today':r.i===1?'Yesterday':new Date(r.k+'T12:00:00').toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}</div><div class="task-meta" style="margin:0;flex:1">${countPills(r.c)}</div><div style="width:90px" title="weighted score"><div class="progress" style="margin:0"><span style="width:${r.score/max*100}%;background:${r.c.A.t+r.c.A.s?'#991b1b':'#222'}"></span></div></div></div>`).join('')}</section>`}
+function renderCompleted(){const groups={};data.tasks.filter(t=>t.completedAt).sort((a,b)=>b.completedAt.localeCompare(a.completedAt)).forEach(t=>{const k=t.completedAt.slice(0,10);(groups[k]??=[]).push(t)});const keys=Object.keys(groups);return renderTracker()+`<section class="panel"><div class="panel-head"><div><h2>Completed work</h2><div class="sub">A day-wise record of what you actually finished.</div></div><span class="pill">${data.tasks.filter(t=>t.completedAt).length} completed</span></div>${keys.length?keys.map(k=>`<div class="day-group"><div class="day-title"><span>${dayLabel(k)}</span><span class="muted">${groups[k].length} done</span></div><div class="task-list">${groups[k].map(t=>taskCard(t)).join('')}</div></div>`).join(''):'<div class="empty">Completed tasks will appear here, grouped by day.</div>'}</section>`}
+function renderPrinciples(){const ratings=data.ratings||{};const areas=['Technical depth / system understanding','Problem solving & debugging','Code quality & delivery','System design & architecture','Communication & elaboration','Focus & attention management','Consistency & self-directed execution','Life outside work (home, people, fun, rest)'];return `<div class="grid"><section class="panel"><h2>Operating principles</h2><div class="sub">Your one-page guide for deciding and executing.</div>${principles.map((p,i)=>`<div class="principle"><strong>${i+1}. ${p[0]}</strong><p>${p[1]}</p></div>`).join('')}<div class="callout"><strong>ABCDE rule</strong><p><b>A:</b> Must do; serious consequences. <b>B:</b> Should do; mild consequences. <b>C:</b> Nice to do; little consequence. <b>D:</b> Delegate. <b>E:</b> Eliminate. Prioritize A1 before A2, and don't let C tasks crowd out A tasks.</p></div><div class="callout"><strong>Law of Three</strong><p>Identify the three activities that create most of your career or life results. Choose activities, not vague goals, and schedule them repeatedly.</p><div class="field" style="margin:10px 0 0"><input data-three="0" value="${esc(data.threeActivities?.[0]||'')}" placeholder="1. Activity that creates major results"></div><div class="field"><input data-three="1" value="${esc(data.threeActivities?.[1]||'')}" placeholder="2. Second high-value activity"></div><div class="field" style="margin-bottom:0"><input data-three="2" value="${esc(data.threeActivities?.[2]||'')}" placeholder="3. Third high-value activity"></div><button class="btn small" style="margin-top:9px" data-action="saveThree">Save my three</button></div></section>
+ <aside class="panel"><h2>Find your weakest link</h2><div class="sub">Rate the key result areas honestly from 1–10. Your lowest important score is a candidate bottleneck, not a verdict on you.</div><div class="review-grid" style="grid-template-columns:1fr;margin-top:14px">${areas.map((a,i)=>`<div class="rating"><label>${esc(a)}</label><small>Current ability: <b id="ratingVal${i}">${ratings[i]??5}/10</b></small><input type="range" min="1" max="10" value="${ratings[i]??5}" data-rating="${i}"></div>`).join('')}</div><div class="callout" id="weakestBox">${weakestText(areas,ratings)}</div><div class="field"><label for="improvePlan">MY NEXT IMPROVEMENT ACTION</label><textarea id="improvePlan" placeholder="What will I practise, study, or change this week?">${esc(data.improvePlan||'')}</textarea></div><button class="btn primary" data-action="saveImprove">Save improvement plan</button>
+ <div class="section-title">Energy check</div><div class="field"><label>WHEN IS YOUR BEST FOCUS WINDOW?</label><select id="energyWindow"><option ${data.energy.window==='Morning'?'selected':''}>Morning</option><option ${data.energy.window==='Afternoon'?'selected':''}>Afternoon</option><option ${data.energy.window==='Evening'?'selected':''}>Evening</option></select></div><div class="field"><label>WHAT DRAINS YOUR ATTENTION?</label><input id="energyDrain" value="${esc(data.energy.drain||'')}" placeholder="e.g. phone, context switching"></div><button class="btn small" data-action="saveEnergy">Save energy check</button></aside></div>`}
+function weakestText(areas,ratings){const entries=areas.map((a,i)=>({a,v:Number(ratings[i]??5)})).sort((x,y)=>x.v-y.v);const w=entries[0];return `<strong>Current candidate weak link: ${esc(w.a)} (${w.v}/10)</strong><p>Ask: Is this low score actually limiting my most important goal? If yes, choose one practice action and review again after a week.</p>`}
+const VISION_DEFAULT={
+ future:[],
+ beliefs:[],
+ insights:[],
+ rules:[
+  "Don't just increase your effort. Identify where your effort is getting blocked.",
+  'Real discipline is self-directed execution.',
+  'No one is coming to save you.',
+  'Have urgency — shrink the gap between deciding and starting.',
+  'Be your strongest supporter. Talk to yourself like a coach, not a critic.',
+  'Track your energy and protect your best hours.',
+  'Protect your attention — phone out before the frog.',
+  'Salami slices: break the task into small periodic steps.',
+  'Swiss cheese: do the main task first, in focused bursts.',
+  'Use the calendar with the to-do list, and protect those hours.',
+  "Productivity isn't how many tasks you finish — it's whether you finish the right ones."]
+};
+function vis(){const v=data.vision||{};return{future:v.future||VISION_DEFAULT.future,beliefs:v.beliefs||VISION_DEFAULT.beliefs,insights:v.insights||VISION_DEFAULT.insights,rules:v.rules||VISION_DEFAULT.rules}}
+function dayIndex(n){const d=new Date();return Math.floor((d-new Date(d.getFullYear(),0,0))/864e5)%n}
+function todayReminder(){const v=vis();const r=v.rules[dayIndex(v.rules.length)]||'';const f=v.future[dayIndex(v.future.length)];return `<div class="callout" style="background:#171717;color:#fff"><strong style="color:#fff">⚡ Today's rule</strong><p style="color:#ddd">${esc(r)}</p>${f?`<p style="color:#aaa;margin-top:8px">Future me: ${esc(f.text)}</p>`:''}<button class="btn small" style="margin-top:9px" data-tab="vision">Open vision →</button></div>`}
+function linkPill(id){if(!id)return '<span class="pill">no task yet</span>';const t=data.tasks.find(x=>x.id===id);if(!t)return '<span class="pill">task missing</span>';return `<span class="pill ${t.completedAt?'':'a'}">${t.completedAt?'✓ ':''}${esc(t.title.length>42?t.title.slice(0,40)+'…':t.title)}</span>`}
+function renderVision(){const v=vis();const list=(arr,key)=>`<div class="field" style="margin-top:10px"><textarea data-vision="${key}" style="min-height:${key==='future'?260:180}px">${esc(arr.map(x=>typeof x==='string'?x:x.text).join('\n'))}</textarea></div>`;
+ return `<div class="grid"><section class="panel"><div class="panel-head"><div><h2>🌅 Future me</h2><div class="sub">Each line is linked to the task that actually builds it. A line with "no task yet" is a wish, not a plan.</div></div></div>
+ <div class="task-list">${v.future.length?'':'<div class="empty">No future-me lines yet. Add them in the editor on the right, or import your JSON.</div>'}${v.future.map(f=>`<div class="task"><div class="task-main"><div class="task-title">${esc(f.text)}</div><div class="task-meta">${linkPill(f.task)}</div></div></div>`).join('')}</div>
+ <div class="section-title">Who I am — beliefs</div>${v.beliefs.map(b=>`<div class="principle"><p style="color:#222">${esc(b)}</p></div>`).join('')}
+ <div class="section-title">Self-insights</div>${v.insights.map(b=>`<div class="principle"><p style="color:#222">${esc(b)}</p></div>`).join('')}</section>
+ <aside class="panel"><h2>⚡ Operating rules</h2><div class="sub">One rule shows on the Execute tab each day. Read them before the Frog Block — not instead of it.</div>${v.rules.map((r,i)=>`<div class="principle"><strong>${i+1}. ${esc(r)}</strong></div>`).join('')}
+ <div class="section-title">Edit (one item per line)</div><div class="tiny">Future-me lines keep their task links by position.</div>${list(v.future,'future')}${list(v.beliefs,'beliefs')}${list(v.insights,'insights')}${list(v.rules,'rules')}<button class="btn primary" style="width:100%" data-action="saveVision">Save vision & rules</button></aside></div>`}
+let timer=null,timerEnd=0,timerKind='focus',pausedLeft=0;
+function pauseTimer(){const btn=document.getElementById('pauseBtn');const el=document.getElementById('timerOut');if(timer){pausedLeft=Math.max(0,timerEnd-Date.now());clearInterval(timer);timer=null;const m=Math.floor(pausedLeft/60000),s2=Math.floor(pausedLeft%60000/1000);const txt=String(m).padStart(2,'0')+':'+String(s2).padStart(2,'0');if(el)el.textContent='Paused at '+txt+' — resume soon, don\'t let it drift';document.title='❚❚ '+txt+' Eat the Frog';if(btn)btn.textContent='▶ Resume'}else if(pausedLeft>0){startTimer(pausedLeft/60000,timerKind);if(btn)btn.textContent='❚❚ Pause'}}
+function startTimer(min,kind='focus'){pausedLeft=0;const pb=document.getElementById('pauseBtn');if(pb)pb.textContent='❚❚ Pause';timerKind=kind;timerEnd=Date.now()+min*60000;clearInterval(timer);const tick=()=>{const left=Math.max(0,timerEnd-Date.now());const m=Math.floor(left/60000),s2=Math.floor(left%60000/1000);const el=document.getElementById('timerOut');const txt=String(m).padStart(2,'0')+':'+String(s2).padStart(2,'0');const isBreak=timerKind==='break';if(el)el.textContent=isBreak?'Break: '+txt+' — stand up, water, no phone scrolling':'Focus: '+txt+' — single-handle it';document.title=(left?txt+(isBreak?' ☕ ':' 🐸 '):'')+'Eat the Frog';if(!left){clearInterval(timer);timer=null;alert(isBreak?'Break over! Back to the frog — start the next focus session now.':'Time! Tick the steps you finished. Then take a 5-min break before the next slice.')}};tick();timer=setInterval(tick,1000)}
+function handoffPayload(){const t=document.getElementById('handoffText').textContent.trim().replace('{{PERSONAL_CONTEXT}}',data.handoffContext||'## Who I am\n(Not set yet — import your personal JSON, which includes "handoffContext".)');const snap={today:dateKey(),vision:vis(),tasks:data.tasks,ratings:data.ratings,threeActivities:data.threeActivities,energy:data.energy,improvePlan:data.improvePlan||'',coachNote:data.coachNote||''};return t+'\n\n## MY CURRENT DATA ('+dateKey()+')\n```json\n'+JSON.stringify(snap,null,1)+'\n```\n\n## WHAT I WANT TODAY\n(write here: completed tasks, new ambition, problem, or "what next")\n'}
+function renderHandoff(){const open=data.tasks.filter(t=>!t.completedAt).length;return `<div class="grid"><section class="panel"><div class="panel-head"><div><h2>Talk to Claude</h2><div class="sub">1) Copy the handoff — it carries the coaching prompt, your notes and all ${data.tasks.length} tasks (${open} open). 2) Paste it into a new Claude chat and add what you want. 3) Paste Claude's JSON reply on the right.</div></div><button class="btn primary small" data-action="copyHandoff">Copy handoff + my data</button></div>${data.coachNote?`<div class="callout"><strong>🐸 Last coach note</strong><p>${esc(data.coachNote)}</p></div>`:''}<textarea id="handoffBox" readonly style="width:100%;min-height:420px;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.5 ui-monospace,Menlo,monospace;color:#333;background:#fafafa">${esc(handoffPayload())}</textarea></section>
+ <aside class="panel"><h2>Paste Claude's JSON</h2><div class="sub">Paste the whole reply or just the JSON block. Tasks merge by id/title; your ticks are kept.</div><div class="field" style="margin-top:12px"><textarea id="pasteJson" style="min-height:300px;font:12px/1.5 ui-monospace,Menlo,monospace" placeholder='{"tasks":[ ... ]}'></textarea></div><button class="btn primary" style="width:100%" data-action="importPasted">Import pasted JSON</button><div class="callout"><strong>Tip</strong><p>Export a backup before big changes. The handoff text lives inside this HTML file, so it travels with the website.</p></div></aside></div>`}
+async function copyText(txt){try{await navigator.clipboard.writeText(txt);return true}catch(e){const ta=$('handoffBox');if(!ta)return false;ta.removeAttribute('readonly');ta.focus();ta.select();const ok=document.execCommand('copy');ta.setAttribute('readonly','');return ok}}
+function extractJson(raw){const fence=raw.match(/```(?:json)?\s*([\s\S]*?)```/g);const candidates=fence?fence.map(f=>f.replace(/```(?:json)?/,'').replace(/```$/,'').trim()):[];candidates.push(raw.trim());const a=raw.indexOf('{'),b=raw.lastIndexOf('}');if(a>-1&&b>a)candidates.push(raw.slice(a,b+1));for(const c of candidates.reverse()){try{return JSON.parse(c)}catch(e){}}throw new Error('No valid JSON found. Paste the JSON code block from Claude.')}
+function render(){const view=$('view');view.innerHTML=activeTab==='execute'?renderExecute():activeTab==='tasks'?renderTasks():activeTab==='completed'?renderCompleted():activeTab==='handoff'?renderHandoff():activeTab==='vision'?renderVision():renderPrinciples();document.querySelectorAll('.tab[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===activeTab))}
+function setTab(t){activeTab=t;render()}
+function toggleComplete(id){const t=data.tasks.find(t=>t.id===id);if(!t)return;t.completedAt=t.completedAt?null:new Date().toISOString();save();render()}
+function handleAction(action,id){const t=data.tasks.find(t=>t.id===id);if(action==='add')openModal();if(action==='edit'&&t)openModal(t);if(action==='complete')toggleComplete(id);if(action==='delete'&&t&&confirm('Delete this task permanently?')){data.tasks=data.tasks.filter(x=>x.id!==id);save();render()}if(action==='steps'&&t){const next=t.steps?.find(s=>!s.done);if(!t.steps?.length){openModal(t);return}if(next){next.done=true;next.doneAt=new Date().toISOString();save();render()}else alert('All steps are complete. Mark the task complete when the outcome is achieved.')}if(action==='saveThree'){data.threeActivities=[0,1,2].map(i=>document.querySelector(`[data-three="${i}"]`).value.trim());save();alert('Your three activities are saved.')}if(action==='saveImprove'){data.improvePlan=$('improvePlan').value;save();alert('Improvement plan saved.')}if(action==='timer25')startTimer(25);if(action==='break5')startTimer(5,'break');if(action==='break10')startTimer(10,'break');if(action==='timerPause')pauseTimer();if(action==='timerStop'){clearInterval(timer);timer=null;pausedLeft=0;const pb=document.getElementById('pauseBtn');if(pb)pb.textContent='❚❚ Pause';document.title='Eat the Frog';const el=document.getElementById('timerOut');if(el)el.textContent='Timer stopped.'}if(action==='timer90')startTimer(90);if(action==='saveVision'){const v=vis();const get=k=>document.querySelector(`[data-vision="${k}"]`).value.split('\n').map(x=>x.trim()).filter(Boolean);const fut=get('future').map((t,i)=>({text:t,task:(v.future[i]&&v.future[i].task)||''}));data.vision={future:fut,beliefs:get('beliefs'),insights:get('insights'),rules:get('rules')};save();render();alert('Vision saved.')}if(action==='copyHandoff'){copyText(handoffPayload()).then(ok=>alert(ok?'Handoff copied. Paste it into a new Claude chat.':'Copy failed — select the text box and copy manually.'))}if(action==='importPasted'){try{if(importData(extractJson($('pasteJson').value),'paste'))$('pasteJson').value=''}catch(err){alert(err.message)}}if(action==='saveEnergy'){data.energy={window:$('energyWindow').value,drain:$('energyDrain').value};save();alert('Energy check saved.')}}
+document.addEventListener('click',e=>{const tab=e.target.closest('[data-tab]');if(tab){setTab(tab.dataset.tab);return}const f=e.target.closest('[data-filter]');if(f){filter=f.dataset.filter;render();return}const a=e.target.closest('[data-action]');if(a)handleAction(a.dataset.action,a.dataset.id)});
+document.addEventListener('input',e=>{if(e.target.matches('[data-rating]')){const i=e.target.dataset.rating;data.ratings[i]=Number(e.target.value);const el=$('ratingVal'+i);if(el)el.textContent=e.target.value+'/10';const box=$('weakestBox');if(box){const areas=['Technical depth / system understanding','Problem solving & debugging','Code quality & delivery','System design & architecture','Communication & elaboration','Focus & attention management','Consistency & self-directed execution','Life outside work (home, people, fun, rest)'];box.innerHTML=weakestText(areas,data.ratings)}save()}});
+$('addBtn').onclick=()=>openModal();$('addStep').onclick=()=>addStepInput();$('closeModal').onclick=closeModal;$('cancelModal').onclick=closeModal;$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});$('taskForm').onsubmit=saveTask;
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='eat-the-frog-backup-'+dateKey()+'.json';a.click();URL.revokeObjectURL(a.href)};
+$('importBtn').onclick=()=>$('importFile').click();
+function importData(j,source){
+ const incoming=Array.isArray(j)?j:(j.tasks||[]);const removes=Array.isArray(j)?[]:(j.remove||[]);
+ if(!incoming.length&&!removes.length){alert('No tasks found in this '+source+'.');return false}
+ if(!confirm('Merge '+incoming.length+' task(s)'+(removes.length?' and remove '+removes.length:'')+' from this '+source+'? Existing tasks stay; tasks with the same id or title get updated. Your ticks are kept.'))return false;
+ let added=0,updated=0,removed=0;const P=['A','B','C','D','E'];
+ incoming.forEach(raw=>{if(!raw||!raw.title)return;const t={id:raw.id||uid(),title:String(raw.title).slice(0,140),priority:P.includes(raw.priority)?raw.priority:'B',effort:Number(raw.effort)||60,impact:Math.min(5,Math.max(1,Number(raw.impact)||3)),due:raw.due||'',outcome:raw.outcome||'',consequences:{m:raw.consequences?.m||'',d:raw.consequences?.d||'',mo:raw.consequences?.mo||'',y:raw.consequences?.y||''},weaklink:raw.weaklink||'',firstStep:raw.firstStep||'',notes:raw.notes||'',steps:(raw.steps||[]).map(s=>typeof s==='string'?{id:uid(),title:s,done:false}:{id:s.id||uid(),title:s.title,done:!!s.done}).filter(s=>s.title),createdAt:raw.createdAt||new Date().toISOString(),completedAt:raw.completedAt||null};
+  const old=data.tasks.find(x=>x.id===t.id)||data.tasks.find(x=>x.title.trim().toLowerCase()===t.title.trim().toLowerCase());
+  if(old){const keepDone=old.completedAt;const doneSteps=new Set((old.steps||[]).filter(s=>s.done).map(s=>s.title));Object.assign(old,t,{id:old.id,createdAt:old.createdAt,completedAt:keepDone||t.completedAt});old.steps.forEach(s=>{if(doneSteps.has(s.title))s.done=true});updated++}else{data.tasks.push(t);added++}});
+ removes.forEach(r=>{const k=String(r).trim().toLowerCase();const before=data.tasks.length;data.tasks=data.tasks.filter(x=>x.id!==r&&x.title.trim().toLowerCase()!==k);removed+=before-data.tasks.length});
+ if(!Array.isArray(j)){if(Array.isArray(j.threeActivities))data.threeActivities=j.threeActivities;if(j.improvePlan)data.improvePlan=j.improvePlan;if(j.energy)data.energy=j.energy;if(j.ratings)data.ratings=j.ratings;if(j.coachNote)data.coachNote=j.coachNote;if(typeof j.handoffContext==='string')data.handoffContext=j.handoffContext;if(j.vision&&typeof j.vision==='object')data.vision={...vis(),...j.vision};}
+ save();render();alert('Imported: '+added+' added, '+updated+' updated'+(removes.length?', '+removed+' removed':'')+'.');return true}
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{importData(JSON.parse(await f.text()),'file')}catch(err){alert('Could not read this file: '+err.message)}finally{e.target.value=''}};
+render();
+})();
+</script>
+</body>
+</html>
