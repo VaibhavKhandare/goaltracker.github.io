@@ -1,0 +1,8 @@
+{
+  "name": "goaltracker",
+  "private": true,
+  "description": "Eat the Frog tracker with a tiny Vercel sync API",
+  "dependencies": {
+    "mongodb": "^6.8.0"
+  }
+}
