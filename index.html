@@ -178,7 +178,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function save(fromSync){if(!fromSync)data.updatedAt=Date.now();localStorage.setItem(KEY,JSON.stringify(data));if(!fromSync)schedulePush()}
 const SYNC_KEY_LS='eatTheFrog.sync.v1';
-function syncCfg(){let c={};try{c=JSON.parse(localStorage.getItem(SYNC_KEY_LS))||{}}catch(e){}const onHost=/^https?:$/.test(location.protocol)&&!/github\.io$/.test(location.hostname);return{url:c.url||(onHost?'/api/sync':''),key:c.key||''}}
+function syncCfg(){let c={};try{c=JSON.parse(localStorage.getItem(SYNC_KEY_LS))||{}}catch(e){}const onHost=/^https?:$/.test(location.protocol)&&!/github\.io$/.test(location.hostname);let url=(c.url||(onHost?'/api/sync':'')).trim();if(/^https?:\/\//.test(url)&&!/\/api\/sync\/?$/.test(url))url=url.replace(/\/+$/,'')+'/api/sync';return{url,key:(c.key||'').trim()}}
 function setSyncStatus(t,color){const el=document.getElementById('syncStatus');if(el){el.textContent=t;el.style.color=color||''}}
 let pushTimer=null,syncing=false;
 function schedulePush(){const c=syncCfg();if(!c.url||!c.key)return;clearTimeout(pushTimer);setSyncStatus('☁️ saving…','#92400e');pushTimer=setTimeout(pushNow,1500)}
