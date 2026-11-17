@@ -22,6 +22,14 @@ function keyOk(given) {
   return crypto.timingSafeEqual(a, b);
 }
 
+// Fields never shown without the key.
+const PRIVATE_FIELDS = ['handoffContext'];
+function publicView(data) {
+  const copy = { ...data };
+  PRIVATE_FIELDS.forEach(f => delete copy[f]);
+  return copy;
+}
+
 module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Sync-Key');
@@ -32,14 +40,19 @@ module.exports = async (req, res) => {
   if (!process.env.SYNC_KEY || (!process.env.MONGODB_URI && !global.__frogTestCollections)) {
     return res.status(500).json({ error: 'Server not configured: set MONGODB_URI and SYNC_KEY in Vercel' });
   }
-  if (!keyOk(req.headers['x-sync-key'])) return res.status(401).json({ error: 'Wrong sync key' });
+  const authed = keyOk(req.headers['x-sync-key']);
+  // Owner's choice: reading AND writing are open to anyone with the URL.
+  // Without the key, private fields are hidden on read and preserved on write.
+  // Safety net: one backup per day in the `backups` collection.
 
   try {
     const { state, backups } = await collections();
     const current = await state.findOne({ _id: 'main' });
 
     if (req.method === 'GET') {
-      return res.status(200).json({ data: current ? current.data : null, updatedAt: current ? current.updatedAt : 0 });
+      let data = current ? current.data : null;
+      if (data && !authed) data = publicView(data);
+      return res.status(200).json({ data, updatedAt: current ? current.updatedAt : 0, readOnly: !authed });
     }
 
     if (req.method === 'PUT') {
@@ -49,9 +62,12 @@ module.exports = async (req, res) => {
         return res.status(400).json({ error: 'Body must be {data: object, updatedAt: number}' });
       }
       // Last-write-wins: refuse writes from a device holding older data, hand it the newer copy.
-      if (current && current.updatedAt > body.updatedAt && !body.force) {
+      // Reject writes from a device that didn't start from the latest cloud copy (or holds older data).
+      const stale = current && ((typeof body.base === 'number' && body.base !== current.updatedAt) || current.updatedAt > body.updatedAt);
+      if (stale && !body.force) {
         return res.status(409).json({ error: 'Server has newer data', data: current.data, updatedAt: current.updatedAt });
       }
+      if (!authed && current && current.data) PRIVATE_FIELDS.forEach(f => { if (f in current.data) body.data[f] = current.data[f]; else delete body.data[f]; });
       await state.updateOne({ _id: 'main' }, { $set: { data: body.data, updatedAt: body.updatedAt } }, { upsert: true });
       // One backup per day (latest write of that day wins).
       const day = new Date().toISOString().slice(0, 10);
@@ -64,3 +80,6 @@ module.exports = async (req, res) => {
     return res.status(500).json({ error: 'Sync failed: ' + e.message });
   }
 };
+
+module.exports.collections = collections;
+module.exports.publicView = publicView;
