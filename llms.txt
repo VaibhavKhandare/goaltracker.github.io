@@ -1,0 +1,6 @@
+# Vaibhav's Eat the Frog tracker
+
+> Personal execution tracker (Eat That Frog method): ABCDE-prioritised tasks, a 50-day "future self" challenge, focus-hour ranks and a time-block calendar. Public: agents can read it at the links below.
+
+- [Goals & progress (Markdown)](https://vaibhav-frog-tracker.vercel.app/api/goals): current frog, open tasks by priority, today's calendar, focus rank, last 7 days of completions, vision
+- [Goals & progress (JSON)](https://vaibhav-frog-tracker.vercel.app/api/goals?format=json): same data, structured
