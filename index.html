@@ -196,7 +196,7 @@ function openModal(task=null){
  const fields={title:'title',priority:'priority',effort:'effort',impact:'impact',due:'due',outcome:'outcome',weaklink:'weaklink',firstStep:'firstStep',notes:'notes'};
  Object.entries(fields).forEach(([k,id])=>$(id).value=task?.[k]??({priority:'A',effort:'60',impact:'4'}[k]||''));
  $('c10m').value=task?.consequences?.m||'';$('c10d').value=task?.consequences?.d||'';$('c10mo').value=task?.consequences?.mo||'';$('c10y').value=task?.consequences?.y||'';
- (task?.steps||[]).forEach(s=>addStepInput(s));$('modalBackdrop').classList.add('show');$('title').focus();
+ (task?.steps||[]).forEach(s=>addStepInput(typeof s==='string'?s:(s&&typeof s.title==='string'?s.title:'')));$('modalBackdrop').classList.add('show');$('title').focus();
 }
 function closeModal(){$('modalBackdrop').classList.remove('show')}
 function addStepInput(value=''){const row=document.createElement('div');row.className='step-row';row.innerHTML='<input maxlength="180" placeholder="A small, actionable step" value="'+esc(value)+'"><button type="button" aria-label="Remove step">✕</button>';row.querySelector('button').onclick=()=>row.remove();$('stepsEditor').appendChild(row)}
